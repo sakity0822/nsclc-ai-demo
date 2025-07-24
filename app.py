@@ -52,13 +52,24 @@ data = [
     }
 ]
 
+# 並び順を手動で定義
+STAGE_ORDER = ["ステージIV（初回）", "2次治療", "3次治療"]
+MUTATION_ORDER = [
+    "EGFR陽性", "EGFR陰性", "EGFR-TKI耐性（T790M）",
+    "免疫チェックポイント阻害薬後", "分子標的薬後", "全身状態良好"
+]
+
 st.title("非小細胞肺がん（NSCLC）治療支援AIデモ")
 
-# 入力欄
-stage = st.selectbox("ステージを選んでください", sorted(set(d["ステージ"] for d in data)))
-mutation = st.selectbox("ドライバー変異を選んでください", sorted(set(d["ドライバー変異"] for d in data)))
+# ステージの選択肢（手動順＋存在確認）
+stage_options = [s for s in STAGE_ORDER if s in {d["ステージ"] for d in data}]
+stage = st.selectbox("ステージを選んでください", stage_options)
 
-# 一致するデータを表示
+# ドライバー変異の選択肢（そのステージに存在するもののみ）
+mutation_options = [m for m in MUTATION_ORDER if m in {d["ドライバー変異"] for d in data if d["ステージ"] == stage}]
+mutation = st.selectbox("ドライバー変異を選んでください", mutation_options)
+
+# 該当する治療パスを検索
 matched = [d for d in data if d["ステージ"] == stage and d["ドライバー変異"] == mutation]
 
 if matched:
@@ -70,4 +81,5 @@ if matched:
     st.info(info["根拠"])
 else:
     st.warning("該当する治療パスが見つかりませんでした。")
+
 
